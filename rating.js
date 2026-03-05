@@ -29,7 +29,7 @@
 		// Add settings component
 		Lampa.SettingsApi.addComponent({
 			component: 'rating_plugin',
-			name: 'Рейтинг Кинопоиск/IMDB',
+			name: 'Рейтинг Кинопоиск',
 			icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor"/></svg>'
 		});
 
@@ -132,7 +132,7 @@
 		}
 	}
 
-	function rating_kp_imdb(card) {
+	function rating_kp(card) {
 		var network = new Lampa.Reguest();
 		var clean_title = kpCleanTitle(card.title);
 		var search_date = card.release_date || card.first_air_date || card.last_air_date || '0000';
@@ -150,10 +150,12 @@
 			},
 			cache_time: config.cache_time
 		};
+
 		getRating();
 
 		function getRating() {
 			var movieRating = _getCache(params.id);
+
 			if (movieRating) {
 				return _showRating(movieRating[params.id]);
 			} else {
@@ -161,6 +163,7 @@
 					showError('Не задан API ключ. Рейтинг получить невозможно, зайдите в настройки плагина.');
 					return;
 				}
+
 				searchFilm();
 			}
 		}
@@ -168,8 +171,12 @@
 		function searchFilm() {
 			var url = params.url;
 			var url_by_title = Lampa.Utils.addUrlComponent(url + 'api/v2.1/films/search-by-keyword', 'keyword=' + encodeURIComponent(clean_title));
-			if (card.imdb_id) url = Lampa.Utils.addUrlComponent(url + 'api/v2.2/films', 'imdbId=' + encodeURIComponent(card.imdb_id));
-			else url = url_by_title;
+			
+			if (card.imdb_id) 
+				url = Lampa.Utils.addUrlComponent(url + 'api/v2.2/films', 'imdbId=' + encodeURIComponent(card.imdb_id));
+			else 
+				url = url_by_title;
+
 			network.clear();
 			network.timeout(15000);
 			network.silent(url, function (json) {
@@ -387,10 +394,8 @@
 		function _showRating(data) {
 			if (data) {
 				var kp_rating = !isNaN(data.kp) && data.kp !== null ? parseFloat(data.kp).toFixed(1) : '0.0';
-				var imdb_rating = !isNaN(data.imdb) && data.imdb !== null ? parseFloat(data.imdb).toFixed(1) : '0.0';
 				var render = Lampa.Activity.active().activity.render();
 				$('.wait_rating', render).remove();
-				$('.rate--imdb', render).removeClass('hide').find('> div').eq(0).text(imdb_rating);
 				$('.rate--kp', render).removeClass('hide').find('> div').eq(0).text(kp_rating);
 			}
 		}
@@ -404,9 +409,10 @@
 		Lampa.Listener.follow('full', function (e) {
 			if (e.type == 'complite') {
 				var render = e.object.activity.render();
+				
 				if ($('.rate--kp', render).hasClass('hide') && !$('.wait_rating', render).length) {
 					$('.info__rate', render).after('<div style="width:2em;margin-top:1em;margin-right:1em" class="wait_rating"><div class="broadcast__scan"><div></div></div><div>');
-					rating_kp_imdb(e.data.movie);
+					rating_kp(e.data.movie);
 				}
 			}
 		});
