@@ -415,6 +415,7 @@
 				var kp_rating = !isNaN(data.kp) && data.kp !== null ? parseFloat(data.kp).toFixed(1) : '0.0';
 				var render = Lampa.Activity.active().activity.render();
 
+				$('.wait_rating', render).remove();
 				$('.rate--kp', render).removeClass('hide').find('> div').eq(0).text(kp_rating);
 			}
 		}
@@ -429,8 +430,10 @@
 			if (e.type == 'complite') {
 				var render = e.object.activity.render();
 
-				if ($('.rate--kp', render).hasClass('hide'))
+				if ($('.rate--kp', render).hasClass('hide') && !$('.wait_rating', render).length) {
+					$('.info__rate', render).after('<div style="width:2em;margin-top:1em;margin-right:1em" class="wait_rating"><div class="broadcast__scan"><div></div></div><div>');
 					rating_kp(e.data.movie);
+				}
 			}
 		});
 	}
