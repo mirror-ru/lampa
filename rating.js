@@ -180,8 +180,10 @@
 			network.clear();
 			network.timeout(15000);
 			network.silent(url, function (json) {
-				if (json.items && json.items.length) chooseFilm(json.items);
-				else if (json.films && json.films.length) chooseFilm(json.films);
+				if (json.items && json.items.length) 
+					chooseFilm(json.items);
+				else if (json.films && json.films.length) 
+					chooseFilm(json.films);
 				else if (url !== url_by_title) {
 					network.clear();
 					network.timeout(15000);
@@ -200,6 +202,7 @@
 			}, function (a, c) {
 				var customError = getErrorMessageByCode(a.status);
 				var error = customError ? customError : network.errorDecode(a, c);
+
 				showError(error);
 			}, false, {
 				headers: params.headers
@@ -276,7 +279,6 @@
 						network.silent(params.url + 'api/v2.2/films/' + id, function (data) {
 							var movieRating = _setCache(params.id, {
 								kp: data.ratingKinopoisk,
-								imdb: data.ratingImdb,
 								timestamp: new Date().getTime()
 							}); // Кешируем данные
 							return _showRating(movieRating);
@@ -294,19 +296,13 @@
 						if (str.indexOf('<rating>') >= 0) {
 							try {
 								var ratingKinopoisk = 0;
-								var ratingImdb = 0;
 								var xml = $($.parseXML(str));
 								var kp_rating = xml.find('kp_rating');
 								if (kp_rating.length) {
 									ratingKinopoisk = parseFloat(kp_rating.text());
 								}
-								var imdb_rating = xml.find('imdb_rating');
-								if (imdb_rating.length) {
-									ratingImdb = parseFloat(imdb_rating.text());
-								}
 								var movieRating = _setCache(params.id, {
 									kp: ratingKinopoisk,
-									imdb: ratingImdb,
 									timestamp: new Date().getTime()
 								}); // Кешируем данные
 								return _showRating(movieRating);
@@ -322,7 +318,6 @@
 				} else {
 					var movieRating = _setCache(params.id, {
 						kp: 0,
-						imdb: 0,
 						timestamp: new Date().getTime()
 					}); // Кешируем данные
 					return _showRating(movieRating);
@@ -330,7 +325,6 @@
 			} else {
 				var _movieRating = _setCache(params.id, {
 					kp: 0,
-					imdb: 0,
 					timestamp: new Date().getTime()
 				}); // Кешируем данные
 				return _showRating(_movieRating);
@@ -364,14 +358,19 @@
 		function _getCache(movie) {
 			var timestamp = new Date().getTime();
 			var cache = Lampa.Storage.cache('kp_rating', 500, {}); //500 это лимит ключей
+
 			if (cache[movie]) {
 				if ((timestamp - cache[movie].timestamp) > params.cache_time) {
 					// Если кеш истёк, чистим его
 					delete cache[movie];
 					Lampa.Storage.set('kp_rating', cache);
+					
 					return false;
 				}
-			} else return false;
+			} 
+			else 
+				return false;
+
 			return cache;
 		}
 
@@ -386,7 +385,9 @@
 					data.timestamp = timestamp;
 					cache[movie] = data;
 					Lampa.Storage.set('kp_rating', cache);
-				} else data = cache[movie];
+				} 
+				else 
+					data = cache[movie];
 			}
 			return data;
 		}
@@ -395,6 +396,7 @@
 			if (data) {
 				var kp_rating = !isNaN(data.kp) && data.kp !== null ? parseFloat(data.kp).toFixed(1) : '0.0';
 				var render = Lampa.Activity.active().activity.render();
+
 				$('.wait_rating', render).remove();
 				$('.rate--kp', render).removeClass('hide').find('> div').eq(0).text(kp_rating);
 			}
@@ -409,7 +411,7 @@
 		Lampa.Listener.follow('full', function (e) {
 			if (e.type == 'complite') {
 				var render = e.object.activity.render();
-				
+
 				if ($('.rate--kp', render).hasClass('hide') && !$('.wait_rating', render).length) {
 					$('.info__rate', render).after('<div style="width:2em;margin-top:1em;margin-right:1em" class="wait_rating"><div class="broadcast__scan"><div></div></div><div>');
 					rating_kp(e.data.movie);
