@@ -188,12 +188,16 @@
 					network.clear();
 					network.timeout(15000);
 					network.silent(url_by_title, function (json) {
-						if (json.items && json.items.length) chooseFilm(json.items);
-						else if (json.films && json.films.length) chooseFilm(json.films);
-						else chooseFilm([]);
+						if (json.items && json.items.length) 
+							chooseFilm(json.items);
+						else if (json.films && json.films.length) 
+							chooseFilm(json.films);
+						else 
+							chooseFilm([]);
 					}, function (a, c) {
 						var customError = getErrorMessageByCode(a.status);
 						var error = customError ? customError : network.errorDecode(a, c);
+
 						showError(error);
 					}, false, {
 						headers: params.headers
@@ -213,10 +217,12 @@
 			if (items && items.length) {
 				var is_sure = false;
 				var is_imdb = false;
+
 				items.forEach(function (c) {
 					var year = c.start_date || c.year || '0000';
 					c.tmp_year = parseInt((year + '').slice(0, 4));
 				});
+
 				if (card.imdb_id) {
 					var tmp = items.filter(function (elem) {
 						return (elem.imdb_id || elem.imdbId) == card.imdb_id;
@@ -227,7 +233,9 @@
 						is_imdb = true;
 					}
 				}
+
 				var cards = items;
+
 				if (cards.length) {
 					if (orig) {
 						var _tmp = cards.filter(function (elem) {
@@ -257,6 +265,7 @@
 						if (_tmp3.length) cards = _tmp3;
 					}
 				}
+
 				if (cards.length == 1 && is_sure && !is_imdb) {
 					if (search_year && cards[0].tmp_year) {
 						is_sure = cards[0].tmp_year > search_year - 2 && cards[0].tmp_year < search_year + 2;
@@ -271,6 +280,7 @@
 						}
 					}
 				}
+
 				if (cards.length == 1 && is_sure) {
 					var id = cards[0].kp_id || cards[0].kinopoisk_id || cards[0].kinopoiskId || cards[0].filmId;
 					var base_search = function base_search() {
@@ -280,16 +290,19 @@
 							var movieRating = _setCache(params.id, {
 								kp: data.ratingKinopoisk,
 								timestamp: new Date().getTime()
-							}); // Кешируем данные
+							});
+
 							return _showRating(movieRating);
 						}, function (a, c) {
 							var customError = getErrorMessageByCode(a.status);
 							var error = customError ? customError : network.errorDecode(a, c);
+
 							showError(error);
 						}, false, {
 							headers: params.headers
 						});
 					};
+
 					network.clear();
 					network.timeout(5000);
 					network["native"](params.rating_url + id + '.xml', function (str) {
@@ -298,17 +311,20 @@
 								var ratingKinopoisk = 0;
 								var xml = $($.parseXML(str));
 								var kp_rating = xml.find('kp_rating');
+
 								if (kp_rating.length) {
 									ratingKinopoisk = parseFloat(kp_rating.text());
 								}
+
 								var movieRating = _setCache(params.id, {
 									kp: ratingKinopoisk,
 									timestamp: new Date().getTime()
-								}); // Кешируем данные
+								});
+
 								return _showRating(movieRating);
-							} catch (ex) {
-							}
+							} catch (ex) {}
 						}
+
 						base_search();
 					}, function (a, c) {
 						base_search();
@@ -319,14 +335,16 @@
 					var movieRating = _setCache(params.id, {
 						kp: 0,
 						timestamp: new Date().getTime()
-					}); // Кешируем данные
+					}); 
+
 					return _showRating(movieRating);
 				}
 			} else {
 				var _movieRating = _setCache(params.id, {
 					kp: 0,
 					timestamp: new Date().getTime()
-				}); // Кешируем данные
+				}); 
+				
 				return _showRating(_movieRating);
 			}
 		}
@@ -364,7 +382,7 @@
 					// Если кеш истёк, чистим его
 					delete cache[movie];
 					Lampa.Storage.set('kp_rating', cache);
-					
+
 					return false;
 				}
 			} 
@@ -397,7 +415,6 @@
 				var kp_rating = !isNaN(data.kp) && data.kp !== null ? parseFloat(data.kp).toFixed(1) : '0.0';
 				var render = Lampa.Activity.active().activity.render();
 
-				$('.wait_rating', render).remove();
 				$('.rate--kp', render).removeClass('hide').find('> div').eq(0).text(kp_rating);
 			}
 		}
@@ -412,10 +429,8 @@
 			if (e.type == 'complite') {
 				var render = e.object.activity.render();
 
-				if ($('.rate--kp', render).hasClass('hide') && !$('.wait_rating', render).length) {
-					$('.info__rate', render).after('<div style="width:2em;margin-top:1em;margin-right:1em" class="wait_rating"><div class="broadcast__scan"><div></div></div><div>');
+				if ($('.rate--kp', render).hasClass('hide'))
 					rating_kp(e.data.movie);
-				}
 			}
 		});
 	}
